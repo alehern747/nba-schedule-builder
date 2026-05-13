@@ -1,5 +1,8 @@
+import datetime
 from datetime import date
 from games import fetch_games, parse_all
+from build import Timeframe
+from build import filter_availability
 
 def format_datetime(year, month, day) -> str:
     """Formats and returns a valid date"""
@@ -11,4 +14,6 @@ def format_datetime(year, month, day) -> str:
     return start_date.isoformat()
 
 if __name__ == "__main__":
-    parse_all(fetch_games(format_datetime(2026, 5, 15)))
+    parsed = parse_all(fetch_games(format_datetime(2026, 5, 15)))
+    timeframe = Timeframe(datetime.time(12), datetime.time(17))
+    print(filter_availability(parsed, timeframe))

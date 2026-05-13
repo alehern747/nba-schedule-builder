@@ -1,8 +1,8 @@
 import requests
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
-API_KEY = your_key_here
+API_KEY = "af837f6b-0eff-40a3-87be-8807dbf366df"
 BASE_URL = "https://api.balldontlie.io/v1"
 headers = {"Authorization": API_KEY}
 
@@ -10,7 +10,7 @@ headers = {"Authorization": API_KEY}
 class Game:
     """Represents a game on the schedule"""
     id: int
-    datetime: str
+    datetime: datetime
     home_team: str
     away_team: str
     postseason: bool
@@ -41,5 +41,5 @@ def parse_all(games: dict) -> list[Game]:
 
 def parse_game(game: dict) -> Game:
     """Parses and formats JSON data on a specific game"""
-    return Game(game["id"], game["date"], game["home_team"]["name"],
+    return Game(game["id"], datetime.fromisoformat(game["datetime"]).astimezone(), game["home_team"]["name"],
                 game["visitor_team"]["name"], game["postseason"])
