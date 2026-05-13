@@ -41,5 +41,6 @@ def parse_all(games: dict) -> list[Game]:
 
 def parse_game(game: dict) -> Game:
     """Parses and formats JSON data on a specific game"""
-    return Game(game["id"], datetime.fromisoformat(game["datetime"]).astimezone(), game["home_team"]["name"],
-                game["visitor_team"]["name"], game["postseason"])
+    return Game(game["id"], datetime.fromisoformat(game["datetime"]).astimezone(),
+                game["home_team"]["abbreviation"], game["visitor_team"]["abbreviation"],
+                game["postseason"])
