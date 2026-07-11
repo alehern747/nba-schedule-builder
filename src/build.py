@@ -6,6 +6,8 @@ Timeframe = namedtuple("Timeframe", ["start", "end"])
 
 # need to disallow overlapping timeframes, through UI
 # needs to adapt to availabilities for different days (task scheduling dp)
+# combine all filters, reduce to checking individual games?
+
 def filter_availability(games: list[Game], *timeframes) -> list[Game]:
     """Filters out games outside of daily availability"""
     available_games = []
@@ -19,13 +21,24 @@ def filter_availability(games: list[Game], *timeframes) -> list[Game]:
 
     return available_games
 
-# combine all filters, reduce to checking individual games?
+
 def filter_teams(games: list[Game], *teams) -> list[Game]:
     """Filters out games involving disliked teams"""
     filtered_games = []
 
     for game in games:
         if game.home_team not in teams and game.away_team not in teams:
+            filtered_games.append(game)
+
+    return filtered_games
+
+
+def filter_favorite_teams(games: list[Game], *favorites) -> list[Game]:
+    """Filters out all games without favorite teams playing"""
+    filtered_games = []
+
+    for game in games:
+        if game.home_team in favorites or game.away_team in favorites:
             filtered_games.append(game)
 
     return filtered_games

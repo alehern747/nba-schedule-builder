@@ -1,8 +1,9 @@
 import requests
+import os
 from dataclasses import dataclass
 from datetime import date, datetime
 
-API_KEY = "af837f6b-0eff-40a3-87be-8807dbf366df"
+API_KEY = os.getenv("BALLDONTLIE_API_KEY")
 BASE_URL = "https://api.balldontlie.io/v1"
 headers = {"Authorization": API_KEY}
 
@@ -16,9 +17,12 @@ class Game:
     postseason: bool
 
 
-def fetch_games(end: str) -> str:
+def fetch_games(start: str, end: str) -> str:
     """Returns all games within specified time range"""
-    start = date.today().isoformat()
+    if API_KEY is None:
+        raise RuntimeError("No API Key")
+
+    # start = date.today().isoformat() # change back after testing
     url = f"{BASE_URL}/games"
     response = requests.get(
         url,
@@ -27,7 +31,7 @@ def fetch_games(end: str) -> str:
     )
 
     games = response.json()
-    return games["data"]
+    return parse_all(games["data"])
 
 
 def parse_all(games: dict) -> list[Game]:
