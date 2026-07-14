@@ -1,4 +1,4 @@
-from client import get, parse_all
+from client import get_all_pages, parse_all
 from dataclasses import dataclass
 from datetime import date, datetime
 
