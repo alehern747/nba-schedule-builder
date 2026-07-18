@@ -55,9 +55,17 @@ def filter_below_win_pct(games: list[Game], db: str, threshold: int) -> list[Gam
 
     return filtered_games
 
-def filter_matchups(games: list[Game], db: str, disparity: float) -> list[Game]:
+def filter_matchups(games: list[Game], db: str, max_diff: float) -> list[Game]:
     """Filters out all uncompetitive matchups (games between teams of high win_pct disparity)"""
-    pass
+    filtered_games = []
+    teams = retrieve_standings(db)
+
+    for game in games:
+        disparity = abs(teams[game.home_team].win_pct - teams[game.away_team].win_pct)
+        if disparity <= max_diff:
+            filtered_games.append(game)
+
+    return filtered_games
 
 def filter_favorite_players(games: list[Game], fav_players: list[str]) -> list[Game]:
     pass

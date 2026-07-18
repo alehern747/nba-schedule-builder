@@ -3,7 +3,7 @@ import datetime
 import os
 from src.games import Game
 from src.build import (Timeframe, filter_availability, filter_favorite_teams, filter_teams,
-                       filter_below_win_pct)
+                       filter_below_win_pct, filter_matchups)
 from test_data import TEST_GAMES, TEST_TEAMS
 from database import create_database, save_standings
 
@@ -43,6 +43,12 @@ class FilterGameTest(unittest.TestCase):
             expected.pop(i)
         self.assertEqual(filtered, expected)
 
+    def test_all_even_matchups_retrieved(self):
+        filtered = filter_matchups(self.test_games, self.db, 0.25)
+        expected = self.test_games
+        for i in [10, 7, 4, 3, 0]:
+            expected.pop(i)
+        self.assertEqual(filtered, expected)
 
     # more tests
         # multiple favorite teams
