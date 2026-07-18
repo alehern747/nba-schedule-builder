@@ -5,5 +5,5 @@ from client import format_datetime
 
 
 if __name__ == "__main__":
-    refresh()
+    refresh("nba.db")
     # print(fetch_games(format_datetime(2025, 10, 21), format_datetime(2025, 10, 22)))

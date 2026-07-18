@@ -1,14 +1,21 @@
 import unittest
 import datetime
+import os
 from src.games import Game
 from src.build import filter_availability, filter_favorite_teams, filter_teams, Timeframe
-from test_data import TEST_GAMES
+from test_data import TEST_GAMES, TEST_TEAMS
+from database import create_database
 
 class FilterGameTest(unittest.TestCase):
     def setUp(self):
+        self.db = "test.db"
         self.test_games = list(TEST_GAMES)
+        create_database(self.db)
+        save_standings(TEST_TEAMS)
 
-    # THESE TESTS ARE BROKEN, GENERATE NEW DATA FOR TEST_GAMES
+    def tearDown(self):
+        os.remove(self.db)
+
     def test_all_games_within_daily_timeframe_retrieved(self):
         timeframe = Timeframe(datetime.time(12), datetime.time(17))
         filtered = filter_availability(self.test_games, timeframe)
@@ -30,6 +37,9 @@ class FilterGameTest(unittest.TestCase):
     def test_all_games_including_favorite_team_retrieved(self):
         filtered = filter_favorite_teams(self.test_games, 'LAL')
         self.assertEqual(filtered, [self.test_games[1]])
+
+    def test_all_games_above_win_pct_retrieved(self):
+        pass
 
     # more tests
         # multiple favorite teams

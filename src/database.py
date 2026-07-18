@@ -2,9 +2,9 @@ import sqlite3
 from teams import Team, LEAGUE_TEAMS
 from datetime import datetime
 
-def create_database():
+def create_database(db: str):
     """Initializes a SQL database containing relevant stats on games and teams"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS STANDINGS (
@@ -29,9 +29,9 @@ def create_database():
         """)
 
 
-def save_standings(teams: list[Team]):
+def save_standings(db: str, teams: list[Team]):
     """Updates team database with most recent win / loss data for the current season"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
 
         for team in teams:
@@ -57,12 +57,12 @@ def save_standings(teams: list[Team]):
                 team.win_pct
             ))
 
-    update_last_refresh()
+    update_last_refresh(db)
 
 
-def save_games(game_ids: list[str]):
+def save_games(db: str, game_ids: list[str]):
     """Saves IDs of newly added games to the database, to avoid recounting."""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.executemany("""
             INSERT INTO PROCESSED_GAMES (game_id)
@@ -70,9 +70,9 @@ def save_games(game_ids: list[str]):
         """, [(id,) for id in game_ids])
 
 
-def update_last_refresh():
+def update_last_refresh(db: str):
     """Logs the date and time of the last update to the team database"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         current_time = datetime.now().isoformat(timespec='minutes')
 
@@ -84,9 +84,9 @@ def update_last_refresh():
         """, ("last_refresh", current_time))
 
 
-def retrieve_last_refresh():
+def retrieve_last_refresh(db: str):
     """Returns last time team database was updated, if ever"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT value
@@ -102,10 +102,10 @@ def retrieve_last_refresh():
             return row[0]
 
 
-def retrieve_standings() -> dict[str, list[Team]]:
+def retrieve_standings(db: str) -> dict[str, list[Team]]:
     """Returns formatted standings for all teams from the database. If no existing data,
     returns empty standings"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT team, conference, wins, losses
@@ -125,9 +125,9 @@ def retrieve_standings() -> dict[str, list[Team]]:
         return teams
 
 
-def retrieve_processed_games():
+def retrieve_processed_games(db: str):
     """Returns all games already accounted for in database"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT game_id
@@ -138,9 +138,9 @@ def retrieve_processed_games():
         return processed
 
 
-def delete_season():
+def delete_season(db: str):
     """Deletes all seasonal data in the database"""
-    with sqlite3.connect("nba.db") as conn:
+    with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM STANDINGS")
         cursor.execute("DELETE FROM PROCESSED_GAMES")
