@@ -8,6 +8,7 @@ class FilterGameTest(unittest.TestCase):
     def setUp(self):
         self.test_games = list(TEST_GAMES)
 
+    # THESE TESTS ARE BROKEN, GENERATE NEW DATA FOR TEST_GAMES
     def test_all_games_within_daily_timeframe_retrieved(self):
         timeframe = Timeframe(datetime.time(12), datetime.time(17))
         filtered = filter_availability(self.test_games, timeframe)
