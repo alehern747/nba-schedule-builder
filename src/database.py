@@ -28,8 +28,6 @@ def create_database():
             )
         """)
 
-        conn.close()
-
 
 def save_standings(teams: list[Team]):
     """Updates team database with most recent win / loss data for the current season"""
@@ -58,7 +56,6 @@ def save_standings(teams: list[Team]):
                 team.losses,
                 team.win_pct
             ))
-        conn.close()
 
     update_last_refresh()
 
@@ -71,8 +68,6 @@ def save_games(game_ids: list[str]):
             INSERT INTO PROCESSED_GAMES (game_id)
             VALUES (?) 
         """, [(id,) for id in game_ids])
-
-        conn.close()
 
 
 def update_last_refresh():
@@ -88,8 +83,6 @@ def update_last_refresh():
                 value = excluded.value
         """, ("last_refresh", current_time))
 
-        conn.close()
-
 
 def retrieve_last_refresh():
     """Returns last time team database was updated, if ever"""
@@ -102,7 +95,6 @@ def retrieve_last_refresh():
         """, ("last_refresh",))
 
         row = cursor.fetchone()
-        conn.close()
 
         if row is None:
             return None
@@ -130,7 +122,6 @@ def retrieve_standings() -> dict[str, list[Team]]:
             for row in rows:
                 teams[row[0]] = Team(row[0], row[1], row[2], row[3], 0.0)
 
-        conn.close()
         return teams
 
 
@@ -144,5 +135,13 @@ def retrieve_processed_games():
         """)
 
         processed = {row[0] for row in cursor.fetchall()}
-        conn.close()
         return processed
+
+
+def delete_season():
+    """Deletes all seasonal data in the database"""
+    with sqlite3.connect("nba.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM STANDINGS")
+        cursor.execute("DELETE FROM PROCESSED_GAMES")
+        cursor.execute("DELETE FROM METADATA")
