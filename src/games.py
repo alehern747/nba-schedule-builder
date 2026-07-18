@@ -14,12 +14,10 @@ class Game:
     status: str
     postseason: bool
 
-
 def fetch_games(start: str, end: str) -> list[Game]:
     """Returns all games within specified time range"""
     games = get_all_pages("games", {"per_page": 100, "start_date": start, "end_date": end})
     return parse_all(games, parse_game)
-
 
 def parse_game(game: dict) -> Game:
     """Parses and formats JSON data on a specific game"""

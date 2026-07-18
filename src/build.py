@@ -22,7 +22,6 @@ def filter_availability(games: list[Game], *timeframes) -> list[Game]:
 
     return available_games
 
-
 def filter_teams(games: list[Game], *teams) -> list[Game]:
     """Filters out games involving disliked teams"""
     filtered_games = []
@@ -32,7 +31,6 @@ def filter_teams(games: list[Game], *teams) -> list[Game]:
             filtered_games.append(game)
 
     return filtered_games
-
 
 def filter_favorite_teams(games: list[Game], *favorites) -> list[Game]:
     """Filters out all games without favorite teams playing"""
@@ -66,6 +64,3 @@ def filter_matchups(games: list[Game], db: str, max_diff: float) -> list[Game]:
             filtered_games.append(game)
 
     return filtered_games
-
-def filter_favorite_players(games: list[Game], fav_players: list[str]) -> list[Game]:
-    pass

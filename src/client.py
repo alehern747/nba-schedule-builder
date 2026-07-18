@@ -20,7 +20,7 @@ def format_datetime(year, month, day) -> str:
     return formatted.isoformat()
 
 def get_all_pages(endpoint: str, params: dict):
-    """Retrieves JSON data from all pages of endpoint, if games past 100"""
+    """Retrieves JSON data from all pages of endpoint, if results past 100"""
     results = []
     cursor = None
 
