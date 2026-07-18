@@ -2,16 +2,17 @@ import unittest
 import datetime
 import os
 from src.games import Game
-from src.build import filter_availability, filter_favorite_teams, filter_teams, Timeframe
+from src.build import (Timeframe, filter_availability, filter_favorite_teams, filter_teams,
+                       filter_below_win_pct)
 from test_data import TEST_GAMES, TEST_TEAMS
-from database import create_database
+from database import create_database, save_standings
 
 class FilterGameTest(unittest.TestCase):
     def setUp(self):
         self.db = "test.db"
         self.test_games = list(TEST_GAMES)
         create_database(self.db)
-        save_standings(TEST_TEAMS)
+        save_standings(self.db, TEST_TEAMS)
 
     def tearDown(self):
         os.remove(self.db)
@@ -20,11 +21,8 @@ class FilterGameTest(unittest.TestCase):
         timeframe = Timeframe(datetime.time(12), datetime.time(17))
         filtered = filter_availability(self.test_games, timeframe)
         expected = self.test_games
-        expected.pop(13)
-        expected.pop(12)
-        expected.pop(11)
-        expected.pop(3)
-        expected.pop(1)
+        for i in [13, 12, 11, 3, 1]:
+            expected.pop(i)
         self.assertEqual(filtered, expected)
 
     def test_all_games_excluding_disliked_teams_retrieved(self):
@@ -39,7 +37,12 @@ class FilterGameTest(unittest.TestCase):
         self.assertEqual(filtered, [self.test_games[1]])
 
     def test_all_games_above_win_pct_retrieved(self):
-        pass
+        filtered = filter_below_win_pct(self.test_games, self.db, 0.5)
+        expected = self.test_games
+        for i in [12, 11, 10, 9, 7, 5, 4, 3]:
+            expected.pop(i)
+        self.assertEqual(filtered, expected)
+
 
     # more tests
         # multiple favorite teams

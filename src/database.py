@@ -108,7 +108,7 @@ def retrieve_standings(db: str) -> dict[str, list[Team]]:
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT team, conference, wins, losses
+            SELECT team, conference, wins, losses, win_pct
             FROM STANDINGS
         """)
 
@@ -120,7 +120,7 @@ def retrieve_standings(db: str) -> dict[str, list[Team]]:
                 teams[team] = Team(team, conference, 0, 0, 0.0)
         else:
             for row in rows:
-                teams[row[0]] = Team(row[0], row[1], row[2], row[3], 0.0)
+                teams[row[0]] = Team(row[0], row[1], row[2], row[3], row[4])
 
         return teams
 

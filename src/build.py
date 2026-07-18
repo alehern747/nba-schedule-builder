@@ -1,6 +1,7 @@
 from datetime import time
 from games import Game
 from collections import namedtuple
+from database import retrieve_standings
 
 Timeframe = namedtuple("Timeframe", ["start", "end"])
 
@@ -42,3 +43,21 @@ def filter_favorite_teams(games: list[Game], *favorites) -> list[Game]:
             filtered_games.append(game)
 
     return filtered_games
+
+def filter_below_win_pct(games: list[Game], db: str, threshold: int) -> list[Game]:
+    """Filters out all games involving a team with a win % below given threshold %"""
+    filtered_games = []
+    teams = retrieve_standings(db)
+
+    for game in games:
+        if teams[game.home_team].win_pct >= threshold and teams[game.away_team].win_pct >= threshold:
+            filtered_games.append(game)
+
+    return filtered_games
+
+def filter_matchups(games: list[Game], db: str, disparity: float) -> list[Game]:
+    """Filters out all uncompetitive matchups (games between teams of high win_pct disparity)"""
+    pass
+
+def filter_favorite_players(games: list[Game], fav_players: list[str]) -> list[Game]:
+    pass
