@@ -17,26 +17,38 @@ def create_database(db: str):
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS PROCESSED_GAMES (
-                game_id INTEGER PRIMARY KEY
-            )
+                game_id INTEGER PRIMARY KEY)
         """)
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS METADATA (
                 key VARCHAR PRIMARY KEY,
-                value VARCHAR
-            )
+                value VARCHAR)
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS PREVIOUS_SEASON (
+                team VARCHAR PRIMARY KEY,
+                conference VARCHAR,
+                wins INTEGER,
+                losses INTEGER,
+                win_pct REAL)
         """)
 
 
-def save_standings(db: str, teams: list[Team]):
+def save_standings(db: str, teams: list[Team], previous: bool=False):
     """Updates team database with most recent win / loss data for the current season"""
+    if previous:
+        table = "PREVIOUS_SEASON"
+    else:
+        table = "STANDINGS"
+
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
 
         for team in teams:
-            cursor.execute("""
-                INSERT INTO STANDINGS (
+            cursor.execute(f"""
+                INSERT INTO {table} (
                     team,
                     conference,
                     wins,
@@ -102,14 +114,19 @@ def retrieve_last_refresh(db: str):
             return row[0]
 
 
-def retrieve_standings(db: str) -> dict[str, list[Team]]:
+def retrieve_standings(db: str, previous: bool=False) -> dict[str, list[Team]]:
     """Returns formatted standings for all teams from the database. If no existing data,
     returns empty standings"""
+    if previous:
+        table = "PREVIOUS_SEASON"
+    else:
+        table = "STANDINGS"
+
     with sqlite3.connect(db) as conn:
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT team, conference, wins, losses, win_pct
-            FROM STANDINGS
+            FROM {table}
         """)
 
         rows = cursor.fetchall()
@@ -145,3 +162,10 @@ def delete_season(db: str):
         cursor.execute("DELETE FROM STANDINGS")
         cursor.execute("DELETE FROM PROCESSED_GAMES")
         cursor.execute("DELETE FROM METADATA")
+
+
+def transfer_standings(db: str):
+    """Transfers current year standings to previous year"""
+    current = list(retrieve_standings(db).items())
+    save_standings(db, current, True)
+    # delete_season(db) # include this here?
