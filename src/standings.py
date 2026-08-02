@@ -1,5 +1,8 @@
 from games import Game
 from teams import Team
+from database import retrieve_standings, save_standings, delete_season
+
+DEFAULT_PRIOR_GAMES = 20
 
 def compute_standings(games: list[Game], teams: dict[str, Team], processed: list[int]) -> list[Team]:
     """Calculates team stats for completed games in current season"""
@@ -18,11 +21,11 @@ def compute_standings(games: list[Game], teams: dict[str, Team], processed: list
             teams[game.away_team].wins += 1
             teams[game.home_team].losses += 1
 
-    for team in teams.values():
-        games_played = team.wins + team.losses
-        if games_played == 0:
-            team.win_pct = 0.0
-        else:
-            team.win_pct = round(team.wins / games_played, 3)
-
     return list(teams.values()), new_games
+
+# Formulas for win_pct calculation
+def bayesian_shrinkage(team: Team, previous: Team):
+    """Re-evaluates current season win % based on number of games played and previous
+    season standings for small early season sample size"""
+    return ((team.wins + previous.win_pct * DEFAULT_PRIOR_GAMES)
+            / (team.wins + team.losses + DEFAULT_PRIOR_GAMES))

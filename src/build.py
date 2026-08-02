@@ -42,24 +42,43 @@ def filter_favorite_teams(games: list[Game], *favorites) -> list[Game]:
 
     return filtered_games
 
-def filter_below_win_pct(games: list[Game], db: str, threshold: int) -> list[Game]:
+def filter_below_win_pct(games: list[Game], db: str, threshold: float, adj_formula=None) -> list[Game]:
     """Filters out all games involving a team with a win % below given threshold %"""
     filtered_games = []
     teams = retrieve_standings(db)
+    previous_teams = retrieve_standings(db, previous=True)
+
+    if adj_formula:
+        metric = adj_formula
+    else:
+        metric = lambda current, previous: current.win_pct
 
     for game in games:
-        if teams[game.home_team].win_pct >= threshold and teams[game.away_team].win_pct >= threshold:
+        home_win_pct = metric(teams[game.home_team], previous_teams[game.home_team])
+        away_win_pct = metric(teams[game.away_team], previous_teams[game.away_team])
+
+        if home_win_pct >= threshold and away_win_pct >= threshold:
             filtered_games.append(game)
 
     return filtered_games
 
-def filter_matchups(games: list[Game], db: str, max_diff: float) -> list[Game]:
+
+def filter_matchups(games: list[Game], db: str, max_diff: float, adj_formula=None) -> list[Game]:
     """Filters out all uncompetitive matchups (games between teams of high win_pct disparity)"""
     filtered_games = []
     teams = retrieve_standings(db)
+    previous_teams = retrieve_standings(db, previous=True)
+
+    if adj_formula:
+        metric = adj_formula
+    else:
+        metric = lambda current, previous: current.win_pct
 
     for game in games:
-        disparity = abs(teams[game.home_team].win_pct - teams[game.away_team].win_pct)
+        home_win_pct = metric(teams[game.home_team], previous_teams[game.home_team])
+        away_win_pct = metric(teams[game.away_team], previous_teams[game.away_team])
+
+        disparity = abs(home_win_pct - away_win_pct)
         if disparity <= max_diff:
             filtered_games.append(game)
 
