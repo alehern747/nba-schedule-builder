@@ -26,6 +26,3 @@ def refresh(db: str):
 def reset(db: str):
     """Deletes all data in the database."""
     delete_season(db)
-
-if __name__ == "__main__":
-    create_database("nba.db")

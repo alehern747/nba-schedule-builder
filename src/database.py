@@ -134,10 +134,10 @@ def retrieve_standings(db: str, previous: bool=False) -> dict[str, list[Team]]:
         teams = {}
         if not rows:
             for team, conference in LEAGUE_TEAMS.items():
-                teams[team] = Team(team, conference, 0, 0, 0.0)
+                teams[team] = Team(team, conference, 0, 0)
         else:
             for row in rows:
-                teams[row[0]] = Team(row[0], row[1], row[2], row[3], row[4])
+                teams[row[0]] = Team(row[0], row[1], row[2], row[3])
 
         return teams
 

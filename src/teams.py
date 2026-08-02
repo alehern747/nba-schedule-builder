@@ -16,4 +16,8 @@ class Team:
     conference: str
     wins: int
     losses: int
-    win_pct: float
+
+    @property
+    def win_pct(self) -> float:
+        games_played = self.wins + self.losses
+        return round(self.wins / games_played, 3) if games_played else 0.0

@@ -17,6 +17,9 @@ class FilterGameTest(unittest.TestCase):
     def tearDown(self):
         os.remove(self.db)
 
+    def test_empty_game_list_returns_empty(self):
+        self.assertEqual(filter_below_win_pct([], self.db, 0.5),[])
+
     def test_all_games_within_daily_timeframe_retrieved(self):
         timeframe = Timeframe(datetime.time(12), datetime.time(17))
         filtered = filter_availability(self.test_games, timeframe)
@@ -32,9 +35,17 @@ class FilterGameTest(unittest.TestCase):
         expected.pop(1)
         self.assertEqual(filtered, expected)
 
+    def test_filter_teams_with_no_disliked_returns_all_games(self):
+        filtered = filter_teams(self.test_games)
+        self.assertEqual(filtered, self.test_games)
+
     def test_all_games_including_favorite_team_retrieved(self):
         filtered = filter_favorite_teams(self.test_games, 'LAL')
         self.assertEqual(filtered, [self.test_games[1]])
+
+    def test_filter_favorite_unknown_team_returns_empty(self):
+        filtered = filter_favorite_teams(self.test_games,"XYZ")
+        self.assertEqual(filtered, [])
 
     def test_all_games_above_win_pct_retrieved(self):
         filtered = filter_below_win_pct(self.test_games, self.db, 0.5)
@@ -43,12 +54,21 @@ class FilterGameTest(unittest.TestCase):
             expected.pop(i)
         self.assertEqual(filtered, expected)
 
+    def test_zero_win_pct_threshold_returns_all_games(self):
+        filtered = filter_below_win_pct(self.test_games, self.db,0.0)
+        self.assertEqual(filtered, self.test_games)
+
     def test_all_even_matchups_retrieved(self):
         filtered = filter_matchups(self.test_games, self.db, 0.25)
         expected = self.test_games
         for i in [10, 7, 4, 3, 0]:
             expected.pop(i)
         self.assertEqual(filtered, expected)
+
+    def test_large_matchup_threshold_returns_all_games(self):
+        filtered = filter_matchups(self.test_games, self.db,1.0)
+        self.assertEqual(filtered, self.test_games)
+
 
     # more tests
         # multiple favorite teams
