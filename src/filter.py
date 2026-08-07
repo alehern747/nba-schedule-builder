@@ -1,26 +1,16 @@
 from datetime import time
 from games import Game
-from collections import namedtuple
 from database import retrieve_standings
+from user import User
 
-Timeframe = namedtuple("Timeframe", ["start", "end"])
-
-# need to disallow overlapping timeframes, through UI
-# needs to adapt to availabilities for different days (task scheduling dp)
-# combine all filters, reduce to checking individual games?
-
-def filter_availability(games: list[Game], *timeframes) -> list[Game]:
-    """Filters out games outside of daily availability"""
-    available_games = []
-
-    for game in games:
-        game_time = game.datetime.time()
-        for timeframe in timeframes:
-            if timeframe.start <= game_time <= timeframe.end:
-                available_games.append(game)
-                break
-
-    return available_games
+def filter_games(games: list[Game], user_data: User) -> list[Game]:
+    """Runs a set of games through all filters and returns all valid games"""
+    games = filter_favorite_teams(games, *user_data.favorite_teams)
+    games = filter_teams(games, *user_data.blocked_teams)
+    games = filter_below_win_pct(games, NBA_DATABASE, user_data.min_win_pct, bayesian_shrinkage)
+    games = filter_matchups(games, NBA_DATABASE, user_data.win_pct_diff, bayesian_shrinkage) # figure out how to pass the adj_formula into this
+    games = filter_availability(games, user_data.schedule, user_data.min_watch_time)
+    return games
 
 def filter_teams(games: list[Game], *teams) -> list[Game]:
     """Filters out games involving disliked teams"""
@@ -61,7 +51,6 @@ def filter_below_win_pct(games: list[Game], db: str, threshold: float, adj_formu
             filtered_games.append(game)
 
     return filtered_games
-
 
 def filter_matchups(games: list[Game], db: str, max_diff: float, adj_formula=None) -> list[Game]:
     """Filters out all uncompetitive matchups (games between teams of high win_pct disparity)"""
