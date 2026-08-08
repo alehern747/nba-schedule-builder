@@ -4,8 +4,9 @@ from datetime import timedelta, time
 import os
 from src.games import Game
 from src.teams import Team
-from src.filter import filter_favorite_teams, filter_teams, filter_below_win_pct, filter_matchups
+from src.filter import filter_favorite_teams, filter_teams, filter_below_win_pct, filter_matchups, filter_games
 from src.schedule import filter_availability, Timeframe, Weekday
+from src.user import User
 from test_data import TEST_GAMES, TEST_TEAMS, TEST_PREVIOUS_SEASON
 from src.database import create_database, save_standings
 from src.standings import bayesian_shrinkage
@@ -248,6 +249,34 @@ class FilterGameTest(unittest.TestCase):
             ),
             [],
         )
+
+    def test_all_filters_together(self):
+        self.schedule[Weekday.TUESDAY] = [
+            Timeframe(time(18, 0), time(21, 0))
+        ]
+
+        self.schedule[Weekday.WEDNESDAY] = [
+            Timeframe(time(18, 0), time(21, 0))
+        ]
+
+        test_user = User(
+            daily_max_games=3,
+            min_win_pct=0.4,
+            win_pct_diff=0.2,
+            min_watch_time=timedelta(hours=1),
+            favorite_teams=["LAL", "DAL", "WAS", "PHI"],
+            blocked_teams=["OKC"],
+            schedule=self.schedule,
+            simultaneous=False,
+        )
+
+        filtered = filter_games(self.test_games, self.db, test_user)
+
+        self.assertEqual(
+            filtered,
+            [self.test_games[1], self.test_games[3]]
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

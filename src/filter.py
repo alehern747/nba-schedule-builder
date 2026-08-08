@@ -2,13 +2,15 @@ from datetime import time
 from games import Game
 from database import retrieve_standings
 from user import User
+from schedule import filter_availability
+from standings import bayesian_shrinkage # remove later
 
-def filter_games(games: list[Game], user_data: User) -> list[Game]:
+def filter_games(games: list[Game], db: str, user_data: User) -> list[Game]:
     """Runs a set of games through all filters and returns all valid games"""
     games = filter_favorite_teams(games, *user_data.favorite_teams)
     games = filter_teams(games, *user_data.blocked_teams)
-    games = filter_below_win_pct(games, NBA_DATABASE, user_data.min_win_pct, bayesian_shrinkage)
-    games = filter_matchups(games, NBA_DATABASE, user_data.win_pct_diff, bayesian_shrinkage) # figure out how to pass the adj_formula into this
+    games = filter_below_win_pct(games, db, user_data.min_win_pct, bayesian_shrinkage)
+    games = filter_matchups(games, db, user_data.win_pct_diff, bayesian_shrinkage) # figure out how to pass the adj_formula into this
     games = filter_availability(games, user_data.schedule, user_data.min_watch_time)
     return games
 
