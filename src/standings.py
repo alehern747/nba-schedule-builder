@@ -1,8 +1,32 @@
 from games import Game
 from teams import Team
 from database import retrieve_standings, save_standings, delete_season
+from dataclasses import dataclass
 
 DEFAULT_PRIOR_GAMES = 20
+
+@dataclass
+class StandingsContext:
+    current: dict
+    previous: dict
+
+def get_standings_context(db: str) -> StandingsContext:
+    """explain stuff"""
+    return StandingsContext(current=retrieve_standings(db),
+                            previous=retrieve_standings(db, previous=True))
+
+def get_game_win_pcts(game: Game, standings: StandingsContext, metric=None) -> tuple[float, float]:
+    """explain stuff"""
+    if metric:
+        formula = metric
+    else:
+        formula = lambda current, previous: current.win_pct
+
+    home_win_pct = formula(standings.current[game.home_team], standings.previous[game.home_team])
+    away_win_pct = formula(standings.current[game.away_team], standings.previous[game.away_team])
+
+    return home_win_pct, away_win_pct
+
 
 def compute_standings(games: list[Game], teams: dict[str, Team], processed: list[int]) -> list[Team]:
     """Calculates team stats for completed games in current season"""

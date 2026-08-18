@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Callable
+
 from schedule import Weekday, Timeframe
 
 @dataclass
@@ -12,4 +14,4 @@ class User:
     blocked_teams: list[str]
     schedule: dict[Weekday, list[Timeframe]]
     simultaneous: bool
-
+    win_pct_metric: Callable
