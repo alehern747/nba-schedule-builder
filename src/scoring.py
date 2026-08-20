@@ -8,26 +8,26 @@ TEAM_QUALITY_WEIGHT = 20.0
 RIVALRY_WEIGHT = 15.0
 MATCHUP_WEIGHT = 15.0
 
-def calculate_score(user: 'User', schedule: list[Game], standings) -> float:
-    """Calculate schedule scores as tiebreakers using personal and universal game preferences.
-    All game weights add up to 100 points."""
-    score = 0.0
+def calculate_score(user, schedule, standings) -> float:
+    """Calculate the total score of a schedule."""
+    return sum(calculate_game_score(user, game, standings) for game in schedule)
 
-    for game in schedule:
-        score += (_favorite_score(game, user) * FAVORITE_WEIGHT)
+def calculate_game_score(user: 'User', game: Game, standings) -> float:
+    """Calculates the score of a given game."""
+    score = _favorite_score(game, user) * FAVORITE_WEIGHT
 
-        if _is_rivalry(game):
-            score += RIVALRY_WEIGHT
+    if _is_rivalry(game):
+        score += RIVALRY_WEIGHT
 
-        home_win_pct, away_win_pct = get_game_win_pcts(game, standings, user.win_pct_metric)
+    home_pct, away_pct = get_game_win_pcts(game, standings, user.win_pct_metric)
 
-        team_quality = (home_win_pct + away_win_pct) / 2
-        score += team_quality * TEAM_QUALITY_WEIGHT
+    team_quality = (home_pct + away_pct) / 2
+    score += team_quality * TEAM_QUALITY_WEIGHT
 
-        matchup_quality = 1 - abs(home_win_pct - away_win_pct)
-        score += matchup_quality * MATCHUP_WEIGHT
+    matchup_quality = 1 - abs(home_pct - away_pct)
+    score += matchup_quality * MATCHUP_WEIGHT
 
-        # calculate win streak (unfinished)
+    # calculate win streak (unfinished)
 
     return score
 

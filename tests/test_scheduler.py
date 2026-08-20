@@ -31,6 +31,9 @@ class ScheduleGameTest(unittest.TestCase):
     def tearDown(self):
         os.remove(self.db)
 
+
+# redo these, think of TDD? external factors?
+    # these deal with implementation, internals, and thus refactoring fails.
     def test_scheduler_adds_game_to_current_schedule(self):
         self.scheduler.add(0)
         self.assertEqual(self.scheduler._selected_games, [self.test_games[0]])
