@@ -267,7 +267,7 @@ class FilterGameTest(unittest.TestCase):
             favorite_teams=["LAL", "DAL", "WAS", "PHI"],
             blocked_teams=["OKC"],
             schedule=self.schedule,
-            simultaneous=False,
+            max_simultaneous_games=1,
             win_pct_metric=bayesian_shrinkage
         )
 

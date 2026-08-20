@@ -3,6 +3,7 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 from games import Game
 from scoring import calculate_score
+from collections import defaultdict
 
 Timeframe = namedtuple("Timeframe", ["start", "end"])
 
@@ -16,40 +17,87 @@ class Weekday(IntEnum):
     SUNDAY = 6
 
 class Scheduler:
-    """Builds and scores multiple schedules matching user preferences."""
+    """Builds the highest-scoring schedule matching user preferences."""
     def __init__(self, user, games, standings):
         self._user = user
         self._games = games
         self._standings = standings
-        self._selected_games = []
-        self._best_schedule = None
 
-    @property
-    def score(self) -> float:
-        """Returns score of the current working schedule."""
-        return calculate_score(self._user,
-                               self._selected_games,
-                               self._standings)
+    def build(self) -> list[Game]:
+        """Return the highest-scoring valid schedule."""
+        games_by_day = self._group_games_by_day()
 
-    @property
-    def best_score(self) -> float:
-        """Returns score of the best schedule constructed so far."""
-        return calculate_score(self._user,
-                               self._best_schedule,
-                               self._standings) if self._best_schedule else 0.0
+        schedule = []
 
-    def update_best(self):
-        """Sets the current working schedule as the best schedule."""
-        self._best_schedule = self._selected_games.copy()
+        for games in games_by_day.values():
+            schedule.extend(self._optimize_day(games))
 
-    def add(self, index):
-        """Adds a game to the current working schedule."""
-        self._selected_games.append(self._games[index])
+        return sorted(schedule, key=lambda game: game.datetime) # does it need to be sorted?
 
-    def remove(self, index):
-        """Removes a game from the current working schedule."""
-        self._selected_games.remove(self._games[index])
+    def _group_games_by_day(self) -> dict:
+        """Group candidate games by calendar day."""
+        games_by_day = defaultdict(list)
 
+        for game in self._games:
+            games_by_day[game.datetime.date()].append(game)
+
+        return games_by_day
+
+    def _optimize_day(self, games: list[Game]) -> list[Game]:
+        """Return the highest-scoring valid selection for one day."""
+        scored_games = [(game,
+                         calculate_game_score(self._user, game, self._standings))
+                        for game in games]
+
+        scored_games.sort(key = lambda item: item[1], reverse = True)
+
+        best_schedule = []
+        best_score = 0.0
+        selected = []
+
+        def backtrack(i: int, current_score: float) -> None:
+            nonlocal best_schedule, best_score
+
+            if current_score > best_score:
+                best_score = current_score
+                best_schedule = selected.copy()
+
+            if i == len(scored_games):
+                return
+
+            if len(selected) >= self._user.daily_max_games:
+                return
+
+            game, game_score = scored_games[i]
+
+            if self._can_add(game, selected):
+                selected.append(game)
+                backtrack(i + 1, current_score + game_score)
+                selected.pop()
+
+            backtrack(i + 1, current_score)
+
+        backtrack(0, 0.0)
+
+        return best_schedule
+
+    def _can_add(self, candidate: Game, selected: list[Game]) -> bool:
+        """Return whether candidate respects simultaneous-game capacity."""
+        games = selected + [candidate]
+
+        for game in games:
+            start = game.datetime
+
+            simultaneous = sum(
+                other.datetime <= start
+                < (other.datetime + self._user.min_watch_time)
+                for other in games
+            )
+
+            if simultaneous > self._user.max_simultaneous_games:
+                return False
+
+        return True
 
 def matching_timeframe(game: Game, schedule: dict[Weekday, list[Timeframe]], min_watch_time: timedelta) -> Timeframe | None:
     """Finds available user timeframe for a game, if any."""

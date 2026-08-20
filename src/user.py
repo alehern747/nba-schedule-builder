@@ -13,5 +13,5 @@ class User:
     favorite_teams: list[str] # change to sets later?
     blocked_teams: list[str]
     schedule: dict[Weekday, list[Timeframe]]
-    simultaneous: bool
+    max_simultaneous_games: int
     win_pct_metric: Callable
