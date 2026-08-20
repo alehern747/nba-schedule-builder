@@ -9,6 +9,17 @@ LEAGUE_TEAMS = {
     "SAC": "West", "SAS": "West", "TOR": "East", "UTA": "West", "WAS": "East",
 }
 
+RIVALRIES = {
+    ("LAL", "BOS"),
+    ("BOS", "MIA"),
+    ("MIN", "DEN"),
+    ("LAL", "GSW"),
+    ("BOS", "PHI"),
+    ("NYK", "IND"),
+    ("OKC", "SAS"),
+    ("GSW", "HOU")
+}
+
 @dataclass
 class Team:
     """Represents a team in the league"""

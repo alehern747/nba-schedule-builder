@@ -2,6 +2,7 @@ from enum import IntEnum
 from collections import namedtuple
 from datetime import datetime, timedelta
 from games import Game
+from scoring import calculate_score
 
 Timeframe = namedtuple("Timeframe", ["start", "end"])
 
@@ -15,7 +16,40 @@ class Weekday(IntEnum):
     SUNDAY = 6
 
 class Scheduler:
-    pass
+    """Builds and scores multiple schedules matching user preferences."""
+    def __init__(self, user, games, standings):
+        self._user = user
+        self._games = games
+        self._standings = standings
+        self._selected_games = []
+        self._best_schedule = None
+
+    @property
+    def score(self) -> float:
+        """Returns score of the current working schedule."""
+        return calculate_score(self._user,
+                               self._selected_games,
+                               self._standings)
+
+    @property
+    def best_score(self) -> float:
+        """Returns score of the best schedule constructed so far."""
+        return calculate_score(self._user,
+                               self._best_schedule,
+                               self._standings) if self._best_schedule else 0.0
+
+    def update_best(self):
+        """Sets the current working schedule as the best schedule."""
+        self._best_schedule = self._selected_games.copy()
+
+    def add(self, index):
+        """Adds a game to the current working schedule."""
+        self._selected_games.append(self._games[index])
+
+    def remove(self, index):
+        """Removes a game from the current working schedule."""
+        self._selected_games.remove(self._games[index])
+
 
 def matching_timeframe(game: Game, schedule: dict[Weekday, list[Timeframe]], min_watch_time: timedelta) -> Timeframe | None:
     """Finds available user timeframe for a game, if any."""

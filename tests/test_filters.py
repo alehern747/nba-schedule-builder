@@ -268,6 +268,7 @@ class FilterGameTest(unittest.TestCase):
             blocked_teams=["OKC"],
             schedule=self.schedule,
             simultaneous=False,
+            win_pct_metric=bayesian_shrinkage
         )
 
         filtered = filter_games(self.test_games, self.db, test_user)

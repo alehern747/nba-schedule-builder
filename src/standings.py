@@ -11,12 +11,12 @@ class StandingsContext:
     previous: dict
 
 def get_standings_context(db: str) -> StandingsContext:
-    """explain stuff"""
+    """Returns current and previous team standings together"""
     return StandingsContext(current=retrieve_standings(db),
                             previous=retrieve_standings(db, previous=True))
 
 def get_game_win_pcts(game: Game, standings: StandingsContext, metric=None) -> tuple[float, float]:
-    """explain stuff"""
+    """Calculates win % of two teams participating in a game using metric, if any."""
     if metric:
         formula = metric
     else:
